@@ -178,16 +178,16 @@ margin-top: -80px;
 <p>再来翻译一遍，将原来的表看成一个班级，原来表的排序方式是在上课，这个时候，要下课排路队了，group by老师先看一个学生是那个路队，再将他送进那个路队，但是，现在有一个叫floor(rand()*2)的学生，他随机显示自己要去那个路队，如果两次一样，没有错误，但是如果第一次是1，他告诉老师要去1路队，老师要将他送进路队时候，他又rand()了一次，变成了0，报错。  </p>
 <h4 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h4><p>环境 less-11</p>
 <p>先起一个post请求，抓包，通过’输入，报错信息可以知道，应该是被’包裹，故而尝试 1’ or 1 %23 登录成功<br>之后，再burp中，oder by得到字段个数为2；</p>
-<p><img src="images%5Cpasted-10.png%5C" alt="upload successful"></p>
-<p><img src="images%5Cpasted-11.png%5C" alt="upload successful"><br>没有回显，尝试使用报错信息来回显  </p>
-<p><img src="images%5Cpasted-12.png%5C" alt="upload successful"></p>
-<p><img src="images%5Cpasted-13.png%5C" alt="upload successful"><br>得到了数据库名，之要count(1/0/*)是由于group by 语法  </p>
-<p><img src="images%5Cpasted-14.png%5C" alt="upload successful"><br>Count是聚合函数;<br>这个时候，我们再上面database()的地方执行SQL语句。注意，这里要用()来包裹要执行的语句<br><code>1&#39; union select 233,count(*) from information_schema.schemata group by concat(floor(rand(0)*2),(select group_concat(schema_name) from information_schema.schemata))</code></p>
+<p><img src="/images/pasted-10.png" alt="upload successful"></p>
+<p><img src="/images/pasted-11.png" alt="upload successful"><br>没有回显，尝试使用报错信息来回显  </p>
+<p><img src="/images/pasted-12.png" alt="upload successful"></p>
+<p><img src="/images/pasted-13.png" alt="upload successful"><br>得到了数据库名，之要count(1/0/*)是由于group by 语法  </p>
+<p><img src="/images/pasted-14.png" alt="upload successful"><br>Count是聚合函数;<br>这个时候，我们再上面database()的地方执行SQL语句。注意，这里要用()来包裹要执行的语句<br><code>1&#39; union select 233,count(*) from information_schema.schemata group by concat(floor(rand(0)*2),(select group_concat(schema_name) from information_schema.schemata))</code></p>
 <p>前面的from information_schema.schemata 改成tables等等没有影响，但是要保证语句正确。  </p>
-<p><img src="images%5Cpasted-15.png%5C" alt="upload successful"><br>得到  </p>
-<p><img src="images%5Cpasted-16.png%5C" alt="upload successful"><br>库名；<br>同理可得表名，如果回显的不足，可以使用limit 0,1来分别获取。<br>然后 其实也可以使用extractvalue函数与1’union select 4,extractvalue(1,(select database())) #</p>
-<p><img src="images%5Cpasted-17.png%5C" alt="upload successful"></p>
-<p><img src="images%5Cpasted-18.png%5C" alt="upload successful"><br>爆出了库名<br>一定要注意()的位置，extractvalue后的语句用()包裹，concat也是而之后的查询语句也用了一个()包裹，虽然我不知道为什么这么多人喜欢用0x7e。。。<br>Updataxml差不多，不过要三个参数，中间的写一个查询语句。</p>
+<p><img src="/images/pasted-15.png" alt="upload successful"><br>得到  </p>
+<p><img src="/images/pasted-16.png" alt="upload successful"><br>库名；<br>同理可得表名，如果回显的不足，可以使用limit 0,1来分别获取。<br>然后 其实也可以使用extractvalue函数与1’union select 4,extractvalue(1,(select database())) #</p>
+<p><img src="/images/pasted-17.png" alt="upload successful"></p>
+<p><img src="/images/pasted-18.png" alt="upload successful"><br>爆出了库名<br>一定要注意()的位置，extractvalue后的语句用()包裹，concat也是而之后的查询语句也用了一个()包裹，虽然我不知道为什么这么多人喜欢用0x7e。。。<br>Updataxml差不多，不过要三个参数，中间的写一个查询语句。</p>
 <p>一点小经验，个人觉得这个最麻烦的就是括号，所以在构造语句的时候不如把函数的()一起打上，不然最后保证他的对齐很麻烦。</p>
 
     </section>
