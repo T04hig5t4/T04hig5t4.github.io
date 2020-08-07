@@ -10,7 +10,7 @@
 <link rel="shortcut icon" href="https://t1.picb.cc/uploads/2017/12/17/BnwnK.jpg">
 
 
-<title> NaN/8</title>
+<title> SQL注入笔记三</title>
 
 
 
@@ -124,123 +124,86 @@ margin-top: -80px;
 
 
 
-<style>
-    html,body {
-        background: white;
-    }
-    #archtitle {
-        margin-top: 35px;
-        font-size: 25px;
-        color: #1abc9c;
-    }
-    #arch
-          {
-        margin-bottom: 20px;
-    }
-   #archtit {
-        color: #1abc9c !important;
-        background-color: transparent;
-        -webkit-text-decoration-skip: objects;
-    }
 
-  #archtit:active, #archtit:hover {
-        outline-width: 0;
-        border-bottom-color: #555 !important;
-        color: #555 !important;
-        text-decoration: none !important;
-    }
-</style>
-<section id="arch" class="container has-text-centered ">
-
-<!--title-->
-    <h2 id="archtitle">
-        <a id="archtit" href="/2020/08/07/SQL注入笔记三/">SQL注入笔记三</a>
-    </h2>
-    <!--date and author-->
-    <strong id="archdate"><p>Posted on 2020-08-07</p>
-    </strong>
-    </section>
+<link rel="stylesheet" href="/css/highlight.css">
 
 <style>
-    html,body {
-        background: white;
-    }
-    #archtitle {
-        margin-top: 35px;
-        font-size: 25px;
-        color: #1abc9c;
-    }
-    #arch
-          {
-        margin-bottom: 20px;
-    }
-   #archtit {
-        color: #1abc9c !important;
-        background-color: transparent;
-        -webkit-text-decoration-skip: objects;
+    .markdown-body {
+        box-sizing: border-box;
+        min-width: 200px;
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 45px;
     }
 
-  #archtit:active, #archtit:hover {
-        outline-width: 0;
-        border-bottom-color: #555 !important;
-        color: #555 !important;
-        text-decoration: none !important;
+    @media (max-width: 767px) {
+        .markdown-body {
+            padding: 15px;
+        }
+    }
+    #postsec {
+        clear: left;
+    }
+
+
+
+    .details {
+        float: left;
+        padding-left: 10px;
+        font-size: 18px;
+
+    }
+    div > span {
+       margin-left: 0px;
+      margin-top: 0px;
     }
 </style>
-<section id="arch" class="container has-text-centered ">
+<section id="post_section" class="container markdown-body" >
 
-<!--title-->
-    <h2 id="archtitle">
-        <a id="archtit" href="/2020/08/07/SQL注入笔记二/">SQL注入笔记二</a>
+    <!--title,date,tags-->
+    <h2 id="hidden">
+        SQL注入笔记三
     </h2>
-    <!--date and author-->
-    <strong id="archdate"><p>Posted on 2020-08-07</p>
-    </strong>
+
+    <section class="desec">
+
+        
     </section>
 
-<style>
-    html,body {
-        background: white;
-    }
-    #archtitle {
-        margin-top: 35px;
-        font-size: 25px;
-        color: #1abc9c;
-    }
-    #arch
-          {
-        margin-bottom: 20px;
-    }
-   #archtit {
-        color: #1abc9c !important;
-        background-color: transparent;
-        -webkit-text-decoration-skip: objects;
-    }
 
-  #archtit:active, #archtit:hover {
-        outline-width: 0;
-        border-bottom-color: #555 !important;
-        color: #555 !important;
-        text-decoration: none !important;
-    }
-</style>
-<section id="arch" class="container has-text-centered ">
+    <!-- content -->
+    <section id="postsec"><p>布尔盲注:当页面没有报错语句，可以通过构造表达式来比较所构造的内容与后台内容是否相等，从而获取信息。<br>如果不用脚本or SQLMap or burp 去手动搞是会死人的。。。<br>常见函数  </p>
+<ol>
+<li><p>Length()返回()中字符串长度，以字节为单位</p>
+</li>
+<li><p>Substr(string,int,int)截取指定的字符串长度，注意1，0可以指定第一个字符开始。</p>
+</li>
+<li><p>Ascii() 编码，没什么好说的</p>
+</li>
+<li><p>left(character,int)返回从字符串左边指定数量的字符，right()左改成右  </p>
+</li>
+<li><p>sleep() 将程序在n 秒内在运行<br>if() SQL中的if 表达式为IF(expr1,expr2,expr3)，如果第一个语句成立，就执行第二个语句，如果不成立，执行第三个。<br>例less-8<br>前期可判断为’包裹的字符型，但是仅仅可以判断语句正确或者错误，数据库数据无法回显，<br>如果，这个时候我们要通过database()来判断数据库名，是无法直接得到的<br>但是构造<br><code>?id = 1’ and length(database()) =8</code><br>来判断(可以使用&gt; &lt;号来进行二分法快速查找)<br>比如，暴库的时候<br><code>?id = 1’ and left((select database()),1)&gt; ‘q’ %23</code><br>爆库名则有<br><code>?id = 1’ and (substr(select schema_name from  information_schema.schemata limit 0,1),1,1) &lt; 98;</code><br>查出来几个之后也可以用exist来直接猜；<br>二 基于延时的布尔盲注，用于页面怎么都没有回显的情况 这玩意不用sqlmap基本没得搞<br>常见的语句<br><code>?id = 1’ or if((substr(select schema_name from information_schema.schemata limit 1,1),1,0) =’a’,sleep(3),1) %23 </code></p>
+<p>三 cookie 注入，没什么好说的，和post注入没什么区别，因为cookie要进SQL查询，故而，会产生注入。。。<br>登的时候burp抓个包慢慢注入就行了<br>四referer 这个时候需要他与数据库有交互，一般后台是要将referer头来记录进数据库，所以这个时候后台常见的函数是inster into 和updata<br>这个时候一般就使用’来和后面构成完整语句，不注释。</p>
+</li>
+</ol>
+<p><img src="%5Cimages%5Cpasted-19.png%5C" alt="upload successful"><br>最后，随着往后继续搞sqli-lab基本就是和各种过滤打交道了</p>
 
-<!--title-->
-    <h2 id="archtitle">
-        <a id="archtit" href="/2020/08/07/SQL注入笔记一/">SQL注入笔记一</a>
-    </h2>
-    <!--date and author-->
-    <strong id="archdate"><p>Posted on 2020-08-07</p>
-    </strong>
     </section>
 
-<!-- 分页 -->
-<div id="fenye" class="container has-text-centered">
-    
-    
-</div>
-<div style="height:30px;"></div>
+
+</section>
+<script>var title = document.getElementById("hidden");
+    title.style.display = "none";
+    sitetitle = document.getElementById("sitetitle");
+    titlev = title.childNodes[0].nodeValue;
+    sitetitle.innerHTML = titlev;
+    shadow = document.getElementById("shadow");
+    shadow.style.visibility = "hidden";
+</script>
+<!-- 评论系统-->
+
+
+
 
 
 <style>
